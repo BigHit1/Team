@@ -50,7 +50,15 @@ Thumbs.db
 output/
 temp/
 *.tmp
-python_embedded/
+
+# Python embedded - 只保留核心运行文件
+python_embedded/Doc/
+python_embedded/Lib/
+python_embedded/tcl/
+python_embedded/include/
+python_embedded/Scripts/
+
+# Tools
 tools/
 
 # UE5
