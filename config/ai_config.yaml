@@ -1,12 +1,11 @@
-# AI4UE - AI Model Configuration
 
 # AI Client Configuration
 ai_client:
   # Claude Code CLI Configuration (推荐用于复杂任务)
   claude_code:
     # API 配置（支持自定义服务地址）
-    api_key: "sk-DorUV4UpxHzYNKD4CIxJ1IDhGY0hT3DVcClLHPz7G0reoQC5"  # 或 CLAUDE_API_KEY
-    api_base_url: "https://synai996.space/"  # 自定义 API 地址（可选）
+    api_key: "sk-9Z3DuTIUv46wnWBkUWKTqE9R7tNZusJ471Cq1V54OCkQHtaq"  # 或 CLAUDE_API_KEY
+    api_base_url: "https://www.fucheers.top"  # 自定义 API 地址（可选）
     
     # CLI 配置
     cli_path: "claude"  # Claude Code CLI 命令路径
@@ -33,44 +32,6 @@ ai_client:
     timeout: 300
     context_window: 200000
   
-  # Aider Configuration with MiniMax
-  aider:
-    # Use MiniMax via Anthropic-compatible API
-    api_key: "${MINIMAX_API_KEY}"
-    api_base: "https://api.minimaxi.com/anthropic"
-    model: "MiniMax-M2.5"
-    max_tokens: 8192
-    timeout: 600
-    auto_commits: false
-    yes_always: true
-    # Aider will use --api-base flag to point to MiniMax
-
-# Agent Configuration
-agents:
-  # Coding Agent
-  coding_agent:
-    max_retries: 3
-    context_window: 200000
-    include_project_structure: true
-    include_existing_code: true
-  
-  # Analysis Agent
-  analysis_agent:
-    max_log_lines: 5000
-    focus_on_errors: true
-    include_stack_trace: true
-  
-  # Fix Agent
-  fix_agent:
-    max_iterations: 5
-    confidence_threshold: 0.8
-    incremental_fix: true
-  
-  # Document Agent
-  document_agent:
-    include_code_diff: true
-    include_test_results: true
-    format: "markdown"
 
 # Prompt Configuration
 prompts:

@@ -13,7 +13,7 @@ from .phase import Phase
 from .workspace import Workspace
 from .access_policy import AccessPolicy
 from ..agents.agent_library import AgentLibrary
-from ..clients.claude_code_client import ClaudeCodeClient, TaskStatus
+from ..clients.claude_code_client import ClaudeCodeClient, TaskStatus, HumanInterventionCallback
 from ..utils.logger import get_logger
 
 # 获取日志器
@@ -26,7 +26,8 @@ class WorkflowOrchestrator:
     def __init__(
         self,
         client: Optional[ClaudeCodeClient] = None,
-        agent_library: Optional[AgentLibrary] = None
+        agent_library: Optional[AgentLibrary] = None,
+        on_need_human: Optional[HumanInterventionCallback] = None
     ):
         """
         初始化编排器
@@ -34,9 +35,11 @@ class WorkflowOrchestrator:
         Args:
             client: Claude Code 客户端（可选，dry_run 模式不需要）
             agent_library: Agent 库（可选，默认使用标准库）
+            on_need_human: 人类介入回调函数（可选）
         """
         self.client = client
         self.agent_library = agent_library or AgentLibrary()
+        self.on_need_human = on_need_human
         self.workspace = None  # 将在执行时初始化
         self.access_policy = None  # 将在执行时初始化
         
@@ -322,7 +325,8 @@ class WorkflowOrchestrator:
         # 执行多轮对话
         result = self.client.execute_multi_round_task(
             requirement=full_requirement,
-            project_path=project_path
+            project_path=project_path,
+            on_need_human=self.on_need_human
         )
         
         return result

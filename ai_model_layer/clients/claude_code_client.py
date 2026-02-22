@@ -10,7 +10,7 @@ import re
 import yaml
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass
 from enum import Enum
 
@@ -54,6 +54,21 @@ class StatusBlock:
             self.warnings = []
 
 
+# 人类介入回调类型定义
+HumanInterventionCallback = Callable[[StatusBlock, str, int], Optional[str]]
+"""
+人类介入回调函数类型
+
+Args:
+    status_block: 当前状态块
+    output: 当前轮次的完整输出
+    iteration: 当前迭代次数
+
+Returns:
+    用户响应内容（继续执行），或 None（终止执行）
+"""
+
+
 @dataclass
 class ClaudeCodeTask:
     """Claude Code 任务"""
@@ -87,12 +102,14 @@ class ClaudeCodeClient(AIClient):
         self.max_iterations = config.get("max_iterations", 10)
         self.auto_continue = config.get("auto_continue", True)
         self.index_directories = config.get("index_directories", [])
+        self.max_human_interventions = config.get("max_human_interventions", 5)
         
         logger.info("初始化 Claude Code 客户端", extra={
             "cli_path": self.cli_path,
             "model": self.model,
             "max_iterations": self.max_iterations,
             "auto_continue": self.auto_continue,
+            "max_human_interventions": self.max_human_interventions,
             "index_dirs_count": len(self.index_directories)
         })
         
@@ -232,7 +249,8 @@ class ClaudeCodeClient(AIClient):
     def execute_multi_round_task(
         self,
         requirement: str,
-        project_path: str
+        project_path: str,
+        on_need_human: Optional[HumanInterventionCallback] = None
     ) -> Dict[str, Any]:
         """
         执行多轮对话任务
@@ -240,6 +258,8 @@ class ClaudeCodeClient(AIClient):
         Args:
             requirement: 需求描述
             project_path: 项目路径
+            on_need_human: 人类介入回调函数，当 AI 返回 need_human 状态时调用
+                          如果返回 None，则终止任务；否则使用返回值继续执行
         
         Returns:
             任务结果
@@ -270,6 +290,7 @@ class ClaudeCodeClient(AIClient):
         iteration = 0
         all_outputs = []
         start_time = time.time()
+        human_intervention_count = 0  # 跟踪人类介入次数
         
         while iteration < self.max_iterations:
             iteration += 1
@@ -349,18 +370,84 @@ class ClaudeCodeClient(AIClient):
                 task_logger.warning(f"介入类型: {status_block.intervention_type}")
                 task_logger.warning(f"优先级: {status_block.priority}")
                 task_logger.warning(f"迭代次数: {iteration}")
+                task_logger.warning(f"人类介入次数: {human_intervention_count + 1}/{self.max_human_interventions}")
                 task_logger.warning("="*60)
                 
-                return {
-                    "success": False,
-                    "task_id": task_id,
-                    "iterations": iteration,
-                    "duration": time.time() - start_time,
-                    "final_output": task.output,
-                    "final_status": "need_human",
-                    "status_block": status_block,
-                    "error": f"需要人类介入: {status_block.reason}"
-                }
+                # 检查是否超过最大人类介入次数
+                if human_intervention_count >= self.max_human_interventions:
+                    task_logger.error(f"已达到最大人类介入次数限制: {self.max_human_interventions}")
+                    return {
+                        "success": False,
+                        "task_id": task_id,
+                        "iterations": iteration,
+                        "duration": time.time() - start_time,
+                        "final_output": task.output,
+                        "final_status": "need_human",
+                        "status_block": status_block,
+                        "human_intervention_count": human_intervention_count,
+                        "error": f"超过最大人类介入次数 ({self.max_human_interventions})"
+                    }
+                
+                # 尝试调用回调函数
+                if on_need_human:
+                    try:
+                        task_logger.info("调用人类介入回调函数...")
+                        human_response = on_need_human(status_block, task.output, iteration)
+                        
+                        if human_response:
+                            human_intervention_count += 1
+                            task_logger.info("="*60)
+                            task_logger.info("收到人类响应，继续执行")
+                            task_logger.info("="*60)
+                            task_logger.info(f"响应内容 ({len(human_response)} 字符):")
+                            task_logger.info("-"*60)
+                            task_logger.info(human_response)
+                            task_logger.info("-"*60)
+                            task_logger.info("="*60)
+                            
+                            # 使用人类响应继续任务
+                            requirement = human_response
+                            continue
+                        else:
+                            task_logger.warning("人类选择终止任务")
+                            return {
+                                "success": False,
+                                "task_id": task_id,
+                                "iterations": iteration,
+                                "duration": time.time() - start_time,
+                                "final_output": task.output,
+                                "final_status": "need_human",
+                                "status_block": status_block,
+                                "human_intervention_count": human_intervention_count,
+                                "error": "人类终止任务"
+                            }
+                    except Exception as e:
+                        task_logger.error(f"人类介入回调函数执行失败: {e}", exc_info=True)
+                        return {
+                            "success": False,
+                            "task_id": task_id,
+                            "iterations": iteration,
+                            "duration": time.time() - start_time,
+                            "final_output": task.output,
+                            "final_status": "need_human",
+                            "status_block": status_block,
+                            "human_intervention_count": human_intervention_count,
+                            "error": f"回调函数执行失败: {e}"
+                        }
+                else:
+                    # 没有回调函数，终止任务
+                    task_logger.warning("未提供人类介入回调函数，任务终止")
+                    return {
+                        "success": False,
+                        "task_id": task_id,
+                        "iterations": iteration,
+                        "duration": time.time() - start_time,
+                        "final_output": task.output,
+                        "final_status": "need_human",
+                        "status_block": status_block,
+                        "human_intervention_count": human_intervention_count,
+                        "error": f"需要人类介入: {status_block.reason}"
+                    }
             
             elif status_block.status == TaskStatus.CONTINUE:
                 if not self.auto_continue:
@@ -472,6 +559,7 @@ class ClaudeCodeClient(AIClient):
             "duration": time.time() - start_time,
             "final_output": all_outputs[-1] if all_outputs else "",
             "final_status": "max_iterations",
+            "human_intervention_count": human_intervention_count,
             "error": f"达到最大轮数 {self.max_iterations}"
         }
     
@@ -866,3 +954,125 @@ class ClaudeCodeClient(AIClient):
             }
             for task in self.tasks.values()
         ]
+
+
+def create_interactive_callback() -> HumanInterventionCallback:
+    """
+    创建交互式回调函数（命令行输入）
+    
+    Returns:
+        人类介入回调函数
+    """
+    def interactive_callback(
+        status_block: StatusBlock,
+        output: str,
+        iteration: int
+    ) -> Optional[str]:
+        """
+        交互式人类介入处理
+        
+        显示 AI 的请求信息，等待用户输入响应
+        """
+        print("\n" + "="*60)
+        print("🤖 AI 需要人类介入")
+        print("="*60)
+        print(f"原因: {status_block.reason}")
+        if status_block.intervention_type:
+            print(f"类型: {status_block.intervention_type}")
+        if status_block.priority:
+            print(f"优先级: {status_block.priority}")
+        print(f"当前轮次: {iteration}")
+        print("="*60)
+        
+        # 显示输出的最后部分（帮助用户理解上下文）
+        if output:
+            lines = output.strip().split('\n')
+            # 显示最后 20 行（排除状态块）
+            preview_lines = []
+            for line in lines[-30:]:
+                if '---TASK_STATUS---' in line:
+                    break
+                preview_lines.append(line)
+            
+            if preview_lines:
+                print("\n最近的输出:")
+                print("-"*60)
+                for line in preview_lines[-20:]:
+                    print(line)
+                print("-"*60)
+        
+        print("\n请输入您的响应（输入 'quit' 或 'exit' 终止任务）:")
+        print("提示: 您可以提供确认、额外信息或指示")
+        print("-"*60)
+        
+        try:
+            # 读取用户输入（支持多行）
+            print("输入内容（输入空行结束）:")
+            lines = []
+            while True:
+                try:
+                    line = input()
+                    if not line:  # 空行表示结束
+                        break
+                    lines.append(line)
+                except EOFError:
+                    break
+            
+            user_input = '\n'.join(lines).strip()
+            
+            # 检查是否终止
+            if user_input.lower() in ['quit', 'exit', 'q']:
+                print("\n用户选择终止任务")
+                return None
+            
+            if not user_input:
+                print("\n未输入内容，使用默认响应")
+                user_input = "请继续执行，我已了解情况。"
+            
+            print("\n" + "="*60)
+            print("✅ 收到响应，继续执行...")
+            print("="*60)
+            
+            return user_input
+            
+        except KeyboardInterrupt:
+            print("\n\n用户中断（Ctrl+C）")
+            return None
+        except Exception as e:
+            print(f"\n错误: {e}")
+            return None
+    
+    return interactive_callback
+
+
+def create_auto_approve_callback(default_response: str = "已确认，请继续") -> HumanInterventionCallback:
+    """
+    创建自动批准回调函数（用于自动化场景）
+    
+    Args:
+        default_response: 默认响应内容
+    
+    Returns:
+        人类介入回调函数
+    """
+    def auto_approve_callback(
+        status_block: StatusBlock,
+        output: str,
+        iteration: int
+    ) -> Optional[str]:
+        """
+        自动批准人类介入请求
+        
+        注意: 仅用于测试或低风险场景
+        """
+        logger.info("="*60)
+        logger.info("自动批准人类介入请求")
+        logger.info("="*60)
+        logger.info(f"原因: {status_block.reason}")
+        logger.info(f"类型: {status_block.intervention_type}")
+        logger.info(f"响应: {default_response}")
+        logger.info("="*60)
+        
+        return default_response
+    
+    return auto_approve_callback
