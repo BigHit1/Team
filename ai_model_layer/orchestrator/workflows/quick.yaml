@@ -6,7 +6,7 @@ description: 快速开发工作流，直接实现和审查
 
 phases:
   - name: implementation
-    agent: ue5-code-guide
+    agent: coder
     description: 直接实现代码
     requirement: "{original_requirement}"
     max_iterations: 8

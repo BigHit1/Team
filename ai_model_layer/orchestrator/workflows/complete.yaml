@@ -23,7 +23,7 @@ phases:
     output_file: architecture.md
   
   - name: implementation
-    agent: ue5-code-guide
+    agent: coder
     description: 基于架构实现代码
     requirement: "基于架构设计，实现代码。\n\n架构设计文档路径：{previous_output_file}\n\n请先阅读该文档，然后实现代码。"
     depends_on: architecture

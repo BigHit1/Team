@@ -146,53 +146,6 @@ tools: ["Read", "Grep", "Glob", "LS", "Write"]
 - 总计: Z 小时
 ```
 
-## ⚠️ UE5 特定考虑：资产文件限制
-
-### 规划时必须考虑的问题
-
-**关键认知：你无法修改 .uasset 文件，所以需要规划出可能需要人类自己修改的文件**
-
-1. **搜索所有可能的位置**
-   ```
-   使用 Glob 搜索：
-   - GameplayEffect: **/GE_*.uasset
-   - 角色蓝图: **/BP_*.uasset, **/B_*.uasset
-   - UI 蓝图: **/W_*.uasset
-   - 数据资产: **/DA_*.uasset
-   ```
-
-2. **在计划中明确列出**
-   ```markdown
-   ## 需要修改的位置
-   
-   ### 可以自动修改（C++/配置文件）
-   - ✅ Source/Game/Character.cpp - 构造函数
-   - ✅ Config/DefaultGame.ini - 配置项
-   
-   ### 需要人类手动修改（资产文件）
-   - ⚠️ Content/Characters/BP_Hero.uasset - 蓝图默认值
-   - ⚠️ Content/GameplayEffects/GE_InitStats.uasset - 属性初始化
-   - ⚠️ Content/UI/W_HealthBar.uasset - UI 硬编码值
-   - ⚠️ Content/Data/DA_CharacterStats.uasset - 数据资产
-   ```
-3. **提供探索方向**
-   你不能修改的地方，给人类提供探索方向。
-
-### 规划原则
-
-1. **假设资产文件可能有问题** - 不要只考虑 C++ 代码
-2. **提供完整的检查清单** - 列出所有可能需要修改的文件
-3. **给出探索方向** - 告诉用户在编辑器中如何检查
-4. **接受限制** - 明确说明哪些是 AI 无法处理的
-
-### 其他 UE5 考虑
-
-1. **模块结构** - 使用 UE5 的模块系统
-2. **蓝图集成** - C++ 类需要暴露给蓝图
-3. **网络复制** - 多人游戏需要考虑复制
-4. **性能** - UE5 的性能最佳实践
-5. **资源管理** - 资源加载和卸载策略
-
 ## 关键原则
 
 1. **具体明确** - 使用确切的文件路径、类名、函数名

@@ -19,6 +19,9 @@ ai_client:
     max_iterations: 5  # 自动迭代最大次数
     check_interval: 5  # 任务状态检查间隔（秒）
     auto_approve: true  # 自动批准所有更改
+    
+    # 索引目录（可选，用于让AI理解项目上下文）
+    index_directories: []
   
   # MiniMax Configuration (via Anthropic-compatible API)
   minimax:
@@ -72,21 +75,20 @@ agents:
 # Prompt Configuration
 prompts:
   system_prompt: |
-    You are a professional UE5 C++/Blueprint developer.
-    Your task is to generate high-quality, runnable UE5 code based on requirements.
+    You are a professional software developer.
+    Your task is to generate high-quality, maintainable code based on requirements.
     
     Requirements:
-    1. Code must follow UE5 coding standards
-    2. Use UCLASS, UPROPERTY, UFUNCTION macros
-    3. Consider thread safety and performance
-    4. Add detailed comments
-    5. Handle edge cases and errors
+    1. Code must follow best practices and coding standards
+    2. Consider performance and security
+    3. Add detailed comments
+    4. Handle edge cases and errors
+    5. Write testable and maintainable code
   
   coding_context: |
     Project Info:
-    - Engine Version: UE5.4
     - Project Type: {project_type}
-    - Target Platforms: Win64, Android, iOS
+    - Programming Language: {language}
     
     Generate code based on the following requirements.
 

@@ -61,14 +61,6 @@ python_embedded/Scripts/
 # Tools
 tools/
 
-# UE5
-Binaries/
-Intermediate/
-Saved/
-DerivedDataCache/
-*.uasset
-*.umap
-
 # Git
 .git/
 

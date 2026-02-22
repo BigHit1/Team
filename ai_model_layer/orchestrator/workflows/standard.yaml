@@ -33,7 +33,7 @@ phases:
     output_file: architecture.md
   
   - name: implementation
-    agent: ue5-code-guide
+    agent: coder
     description: 基于架构实现代码
     requirement: |
       你的任务：基于架构设计实现代码。

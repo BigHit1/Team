@@ -230,58 +230,49 @@ void ServerSpawnActor_Implementation(TSubclassOf<AActor> ActorClass)
 FString EncryptedPassword = SimpleXOR(Password); // 不安全！
 
 // GOOD: 使用强加密
-// 使用 UE5 的加密 API 或第三方库（如 OpenSSL）
+// 使用加密库（如 OpenSSL）
 FString HashedPassword = HashPasswordWithSalt(Password, Salt);
 ```
 
-## 游戏特定安全问题
+## 应用安全问题
 
-### 作弊防护
+### 权限验证
 
-**速度作弊**：
+**操作权限**：
 ```cpp
-// 服务器验证移动速度
-void ServerMove_Implementation(FVector NewLocation)
+// 服务器验证操作权限
+void ServerPerformAction_Implementation(FString Action)
 {
-    float Distance = (NewLocation - CurrentLocation).Size();
-    float MaxDistance = MaxSpeed * DeltaTime;
-    
-    if (Distance > MaxDistance * 1.1f) // 允许 10% 误差
+    if (!HasPermission(Action))
     {
-        // 可能的作弊，拒绝移动
+        // 拒绝未授权操作
         return;
     }
     
-    CurrentLocation = NewLocation;
+    PerformAction(Action);
 }
 ```
 
-**物品作弊**：
+**数据访问**：
 ```cpp
-// 服务器验证物品获取
-bool ServerGiveItem_Validate(AItem* Item)
+// 验证数据访问权限
+bool CanAccessData(int32 DataId)
 {
-    // 验证物品是否在玩家附近
-    float Distance = (Item->GetActorLocation() - GetActorLocation()).Size();
-    if (Distance > MaxPickupDistance)
-    {
-        return false; // 太远，可能作弊
-    }
-    
-    return true;
+    // 验证用户是否有权限访问此数据
+    return UserPermissions.Contains(DataId);
 }
 ```
 
 ### 信息泄露
 
 ```cpp
-// BAD: 泄露敌人位置
+// BAD: 泄露敏感信息
 UPROPERTY(Replicated)
-TArray<AEnemy*> AllEnemies; // 客户端可以看到所有敌人！
+TArray<FSensitiveData> AllData; // 客户端可以看到所有数据！
 
-// GOOD: 只复制可见的敌人
+// GOOD: 只提供必要的信息
 UPROPERTY(Replicated)
-TArray<AEnemy*> VisibleEnemies;
+TArray<FPublicData> VisibleData;
 ```
 
 ## 输出格式

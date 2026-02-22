@@ -31,18 +31,16 @@ class Config:
         
         # 加载配置文件
         self.ai_config = self._load_yaml("ai_config.yaml")
-        self.ue5_config = self._load_yaml("ue5_project_config.yaml")
-        self.jenkins_config = self._load_yaml("jenkins_config.yaml")
     
     def _load_yaml(self, filename: str) -> Dict[str, Any]:
         """加载 YAML 配置文件"""
         file_path = self.config_dir / filename
         
         if not file_path.exists():
-            raise FileNotFoundError(f"配置文件不存在: {file_path}")
+            return {}
         
         with open(file_path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
+            return yaml.safe_load(f) or {}
     
     def get_ai_client_config(self, client_type: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -65,27 +63,7 @@ class Config:
     
     def get_prompt(self, prompt_name: str) -> str:
         """获取 Prompt 模板"""
-        return self.ai_config["prompts"].get(prompt_name, "")
-    
-    def get_ue5_project_path(self) -> str:
-        """获取 UE5 项目路径"""
-        return self.ue5_config["project"]["path"]
-    
-    def get_ue5_engine_path(self) -> str:
-        """获取 UE5 引擎路径"""
-        return self.ue5_config["engine"]["root_path"]
-    
-    def get_build_config(self) -> Dict[str, Any]:
-        """获取构建配置"""
-        return self.ue5_config["build"]
-    
-    def get_test_config(self) -> Dict[str, Any]:
-        """获取测试配置"""
-        return self.ue5_config["testing"]
-    
-    def get_jenkins_config(self) -> Dict[str, Any]:
-        """获取 Jenkins 配置"""
-        return self.jenkins_config
+        return self.ai_config.get("prompts", {}).get(prompt_name, "")
     
     def __repr__(self) -> str:
         return f"<Config config_dir={self.config_dir}>"

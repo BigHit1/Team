@@ -14,7 +14,7 @@ phases:
     output_file: plan.md
   
   - name: implementation
-    agent: ue5-code-guide
+    agent: coder
     description: 实现代码，遵循安全最佳实践
     requirement: "基于计划实现代码。\n\n计划文档路径：{previous_output_file}\n\n请先阅读该文档，然后实现代码。"
     depends_on: planning
@@ -32,7 +32,7 @@ phases:
     output_file: security_review.md
   
   - name: fix
-    agent: ue5-code-guide
+    agent: coder
     description: 修复安全问题
     requirement: "根据安全审查报告，修复所有发现的安全问题。\n\n安全审查报告路径：{previous_output_file}\n\n请先阅读该报告，然后修复安全问题。"
     depends_on: security_review

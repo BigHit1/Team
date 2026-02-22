@@ -1,9 +1,8 @@
-# AI4UE - AI 驱动的 UE5 自动化开发流水线
+# Team AI - 智能团队协作 AI 工具
 
-> 基于 Claude Code CLI 和多 Agent 编排的智能化 UE5 开发系统
+> 基于 Claude 和多 Agent 编排的智能化开发协作系统
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
-[![UE5](https://img.shields.io/badge/UE5-5.3+-orange.svg)](https://www.unrealengine.com/)
 [![Claude](https://img.shields.io/badge/Claude-Opus_4-purple.svg)](https://www.anthropic.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -22,13 +21,11 @@
 - ✅ **异步任务管理**: 支持任务监控、自动重试、进度追踪
 - ✅ **技能库系统**: 可复用的协议和最佳实践
 
-📖 详见 [架构文档](docs/ARCHITECTURE.md) | [AI Model Layer 详解](#-ai-model-layer-核心架构)
-
 ---
 
 ## 🎯 项目概述
 
-AI4UE 是一个**高度模块化的 AI 自动化开发系统**，通过多 Agent 协作完成从需求分析到代码实现的全流程。
+Team AI 是一个**高度模块化的 AI 自动化开发系统**，通过多 Agent 协作完成从需求分析到代码实现的全流程。
 
 ### 核心特性
 
@@ -48,14 +45,13 @@ AI4UE 是一个**高度模块化的 AI 自动化开发系统**，通过多 Agent
 - **Python**: 3.9+
 - **Claude Code CLI**: 已安装并配置
 - **Git**: 版本控制
-- **UE5**: 5.3+ (可选，用于 UE5 项目开发)
 
 ### 安装步骤
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/yourname/AI4UE_Plugin.git
-cd AI4UE_Plugin
+git clone https://github.com/yourname/team-ai.git
+cd team-ai
 
 # 2. 安装依赖
 pip install -r requirements.txt
@@ -66,7 +62,7 @@ $env:ANTHROPIC_AUTH_TOKEN="your_api_key"
 $env:ANTHROPIC_BASE_URL="your_base_url"
 
 # 4. 测试工作流
-python scripts/test/test_standard_workflow.py
+python scripts/test_ai_client/test_standard_workflow.py
 ```
 
 ---
@@ -91,8 +87,8 @@ orchestrator = WorkflowOrchestrator(client)
 # 执行标准工作流
 result = orchestrator.execute_workflow(
     workflow_name="standard",  # standard/quick/security
-    requirement="为 Lyra 添加生命恢复能力",
-    project_path="D:/UE5Projects/LyraStarterGame"
+    requirement="实现用户认证功能",
+    project_path="/path/to/your/project"
 )
 ```
 
@@ -110,8 +106,8 @@ client = ClaudeCodeClient({
 
 # 自动迭代执行任务
 result = client.auto_iterate(
-    requirement="创建武器系统",
-    project_path="D:/UE5Projects/MyGame",
+    requirement="创建 REST API 接口",
+    project_path="/path/to/your/project",
     max_iterations=5
 )
 ```
@@ -148,7 +144,7 @@ YourProject/
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    用户层                                 │
-│  Python Scripts / API / Jenkins Pipeline                │
+│  Python Scripts / API / CI/CD Pipeline                  │
 └────────────────────┬────────────────────────────────────┘
                      ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -165,7 +161,7 @@ YourProject/
 │  │  Agents (Agent 库)                              │    │
 │  │  - planner: 需求分析和规划                      │    │
 │  │  - architect: 系统架构设计                      │    │
-│  │  - ue5-code-guide: UE5 代码实现                 │    │
+│  │  - coder: 代码实现                              │    │
 │  │  - code-reviewer: 代码审查                      │    │
 │  │  - security-reviewer: 安全审查                  │    │
 │  └────────────────────────────────────────────────┘    │
@@ -193,7 +189,7 @@ YourProject/
                      ↓
 ┌─────────────────────────────────────────────────────────┐
 │                 外部服务                                  │
-│  Claude API / Git / UE5 Project                         │
+│  Claude API / Git / Your Project                        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -226,7 +222,7 @@ YourProject/
    ↓
 ┌─────────────────────────────────────────┐
 │ Phase 3: Implementation (实现阶段)       │
-│ Agent: ue5-code-guide                   │
+│ Agent: coder                            │
 │ - 读取 architecture.md                  │
 │ - 创建/修改代码文件                      │
 │ - 实现核心功能                           │
@@ -272,34 +268,6 @@ class WorkflowOrchestrator:
     ) -> Dict[str, Any]
 ```
 
-**工作流定义** (YAML 格式):
-
-```yaml
-# workflows/standard.yaml
-name: standard
-description: 标准开发工作流
-
-phases:
-  - name: planning
-    agent: planner
-    requirement: "分析需求：{original_requirement}"
-    max_iterations: 5
-    output_file: plan.md
-  
-  - name: architecture
-    agent: architect
-    requirement: "基于计划设计架构：{previous_output_file}"
-    depends_on: planning
-    max_iterations: 5
-    output_file: architecture.md
-```
-
-**特性**：
-- 支持阶段依赖 (`depends_on`)
-- 支持模板变量 (`{previous_output_file}`)
-- 支持运行隔离 (每次运行独立目录)
-- 支持迭代隔离 (每次迭代独立目录)
-
 ### 2. Agents (Agent 库)
 
 **核心类**: `AgentLibrary`
@@ -310,154 +278,11 @@ phases:
 |-------|------|------|------|
 | **planner** | 需求分析、制定计划 | 只读 + 写文档 | Read, Grep, Glob, Write |
 | **architect** | 系统架构设计 | 只读 + 写文档 | Read, Grep, Glob, Write |
-| **ue5-code-guide** | UE5 代码实现 | 读写代码 | Read, Write, Grep, Glob |
+| **coder** | 代码实现 | 读写代码 | Read, Write, Grep, Glob |
 | **code-reviewer** | 代码审查 | 只读 + 写报告 | Read, Grep, Glob, Write |
 | **cleaner** | 代码清理优化 | 读写代码 | Read, Write, Grep |
 | **doc-updater** | 文档更新 | 读写文档 | Read, Write, Glob |
 | **security-reviewer** | 安全审查 | 只读 + 写报告 | Read, Grep, Glob, Write |
-
-**Agent 定义格式**:
-
-```markdown
----
-name: planner
-description: 规划专家
-model: opus
-tools: ["Read", "Grep", "Glob", "Write"]
----
-
-# 规划专家 (Planner Agent)
-
-你是一个经验丰富的软件规划专家...
-
-## 你的职责
-1. 需求分析
-2. 风险识别
-3. 步骤分解
-...
-```
-
-### 3. Clients (AI 客户端)
-
-**核心类**: `ClaudeCodeClient`
-
-封装 Claude Code CLI，提供高级功能：
-
-```python
-class ClaudeCodeClient:
-    # 异步任务管理
-    def start_task(requirement, project_path) -> ClaudeCodeTask
-    def check_task_status(task_id) -> Dict
-    def wait_for_task(task_id, timeout) -> AIResponse
-    
-    # 自动迭代循环
-    def auto_iterate(
-        requirement: str,
-        project_path: str,
-        max_iterations: int = 5,
-        validation_func: Callable = None
-    ) -> AIResponse
-```
-
-**特性**：
-- ✅ 异步任务管理（启动后可监控进度）
-- ✅ 自动迭代循环（失败自动重试）
-- ✅ 多轮对话协议（解析状态块）
-- ✅ 环境变量管理（自动设置 API 密钥）
-- ✅ 索引目录支持（访问 UE5 引擎代码）
-
-### 4. Skills (技能库)
-
-**多轮对话协议** (`multi-round-protocol`)
-
-让 AI 在每次响应末尾输出结构化状态：
-
-```yaml
----TASK_STATUS---
-status: completed          # completed/continue/need_human/error/waiting/partial
-reason: 任务完成
-confidence: 0.9            # 信心度 0.0-1.0
-progress: 1.0              # 进度 0.0-1.0
-files_modified: [...]      # 修改的文件列表
-warnings: [...]            # 警告信息
----END_STATUS---
-```
-
-**6种状态**：
-- `completed`: 任务完成（信心度 0.8-1.0）
-- `continue`: 需要继续（任务太大，分步执行）
-- `need_human`: 需要人工介入（决策/许可/澄清）
-- `error`: 遇到错误（需要修复）
-- `waiting`: 等待中（等待外部操作）
-- `partial`: 部分完成（有警告，信心度 0.5-0.8）
-
-### 5. FilePolicy (文件权限控制)
-
-**核心类**: `FilePolicy`
-
-基于角色控制 Agent 的文件访问权限：
-
-```python
-class FilePolicy:
-    def get_allowed_write_paths(
-        agent_role: str,    # Agent 角色
-        phase_name: str,    # 阶段名称
-        iteration: int      # 迭代次数
-    ) -> List[Path]
-```
-
-**目录隔离结构**：
-
-```
-.claude/
-└── runs/
-    └── {run_id}/              # 运行隔离
-        ├── phases/            # 阶段输出
-        │   ├── planning/
-        │   │   ├── iter_1/    # 迭代隔离
-        │   │   ├── iter_2/
-        │   │   └── plan.md
-        │   ├── architecture/
-        │   └── implementation/
-        ├── docs/              # 文档目录
-        │   ├── plans/
-        │   └── architecture/
-        ├── temp/              # 临时文件
-        └── diagrams/          # 图表文件
-```
-
-**权限示例**：
-- `planner`: 可写 `docs/plans/`, `temp/planning/`
-- `architect`: 可写 `docs/architecture/`, `diagrams/`, `temp/architecture/`
-- `ue5-code-guide`: 可写项目源代码目录
-- `code-reviewer`: 只读代码，可写 `docs/reviews/`
-
-### 6. Utils (工具层)
-
-**统一日志系统** (`logger.py`)
-
-```python
-from ai_model_layer.utils.logger import get_logger
-
-logger = get_logger(__name__)
-logger.info("任务开始", extra={"task_id": "123", "phase": "planning"})
-```
-
-**特性**：
-- 彩色控制台输出
-- 文件日志（自动轮转）
-- JSON 格式日志
-- 上下文信息支持
-
-**Git 包装器** (`git_wrapper.py`)
-
-```python
-from ai_model_layer.utils.git_wrapper import get_git_wrapper
-
-git = get_git_wrapper()
-git.commit("实现功能 X")
-changes = git.get_changes()
-```
 
 ---
 
@@ -479,9 +304,6 @@ ai_client:
     max_iterations: 5
     timeout: 600
     auto_approve: true
-    index_directories:
-      - "F:/UE5/LyraStarterGame"    # 项目目录
-      - "F:/UE5/UE_5.4"              # 引擎目录
 ```
 
 ### 环境变量
@@ -498,29 +320,10 @@ export ANTHROPIC_BASE_URL="https://api.anthropic.com/"
 
 ---
 
-## 📚 文档
-
-### 核心文档
-- [架构文档](docs/ARCHITECTURE.md) - 完整的系统架构说明
-- [Agent 编排指南](docs/AGENT_ORCHESTRATION_GUIDE.md) - 工作流编排详解
-- [多轮对话协议](docs/MULTI_ROUND_PROTOCOL.md) - 状态管理协议
-- [日志系统指南](docs/LOGGING_GUIDE.md) - 日志使用说明
-
-### 使用指南
-- [配置指南](docs/CONFIGURATION_GUIDE.md) - 详细配置说明
-- [Claude Code CLI 指南](docs/claude_code_cli_guide.md) - CLI 使用方法
-- [文件权限设计](docs/file_policy_design.md) - 权限控制机制
-
-### 示例代码
-- [Claude Code Client 示例](examples/claude_code_client_examples.py) - 客户端使用示例
-- [日志示例](examples/logging_examples.py) - 日志系统示例
-
----
-
 ## 🛠️ 项目结构
 
 ```
-AI4UE_Plugin/
+team-ai/
 ├── ai_model_layer/              # 🧠 AI 模型层（核心）
 │   ├── orchestrator/            # 编排器
 │   │   ├── workflows/           # 工作流定义（YAML）
@@ -534,7 +337,7 @@ AI4UE_Plugin/
 │   │   ├── standard_agents/     # 标准 Agent 定义
 │   │   │   ├── planner.md       # 规划专家
 │   │   │   ├── architect.md     # 架构师
-│   │   │   ├── ue5-code-guide.md # UE5 编码专家
+│   │   │   ├── coder.md         # 编码专家
 │   │   │   ├── code-reviewer.md # 代码审查员
 │   │   │   └── ...
 │   │   └── agent_library.py     # Agent 库管理器
@@ -552,29 +355,9 @@ AI4UE_Plugin/
 │   ├── ai_client.py             # AI 客户端基类
 │   └── __init__.py
 ├── config/                      # 配置文件
-│   ├── ai_config.yaml           # AI 客户端配置
-│   ├── ue5_project_config.yaml  # UE5 项目配置
-│   └── jenkins_config.yaml      # Jenkins 配置
+│   └── ai_config.yaml           # AI 客户端配置
 ├── scripts/                     # 脚本
-│   ├── test/                    # 测试脚本
-│   │   ├── test_standard_workflow.py    # 测试标准工作流
-│   │   ├── test_claude_code_client.py   # 测试客户端
-│   │   ├── test_orchestrator.py         # 测试编排器
-│   │   └── ...
-│   ├── ai_coding_auto.py        # AI 自动化编码
-│   ├── workflow.py              # 工作流执行脚本
-│   ├── pack_hotupdate.py        # 打包热更新
-│   └── push_patch.py            # 推送补丁
-├── examples/                    # 示例代码
-│   ├── claude_code_client_examples.py
-│   └── logging_examples.py
-├── docs/                        # 文档
-│   ├── ARCHITECTURE.md          # 架构文档
-│   ├── AGENT_ORCHESTRATION_GUIDE.md
-│   ├── MULTI_ROUND_PROTOCOL.md
-│   └── ...
-├── requirements/                # 需求文档示例
-│   └── examples/
+│   └── test_ai_client/          # 测试脚本
 ├── tools/                       # 工具
 │   └── git/                     # 内嵌 Git
 └── logs/                        # 日志输出
@@ -615,17 +398,9 @@ AI4UE_Plugin/
 标准化的状态管理机制：
 
 - AI 在每次响应末尾输出状态块
-- 系统自动解析状态判断是否继续
+- 系统自动解析状态判断是否需要继续
 - 支持 6 种状态（completed/continue/need_human/error/waiting/partial）
 - 提供信心度、进度、文件列表等元数据
-
-### 5. 隔离机制
-
-三级目录隔离确保任务独立性：
-
-- **运行隔离**: 每次运行有独立的 run_id
-- **阶段隔离**: 每个阶段有独立的输出目录
-- **迭代隔离**: 每次迭代有独立的临时目录
 
 ---
 
@@ -647,7 +422,7 @@ phases:
     output_file: analysis.md
   
   - name: implementation
-    agent: ue5-code-guide
+    agent: coder
     requirement: "实现功能：{previous_output_file}"
     depends_on: analysis
     max_iterations: 10
@@ -675,100 +450,6 @@ tools: ["Read", "Write", "Grep"]
 2. 职责 2
 ```
 
-### 扩展 ClaudeCodeClient
-
-```python
-from ai_model_layer.clients.claude_code_client import ClaudeCodeClient
-
-class MyCustomClient(ClaudeCodeClient):
-    def custom_method(self):
-        # 自定义逻辑
-        pass
-```
-
----
-
-## 🔍 故障排查
-
-### 常见问题
-
-**Q: 任务一直显示 "running" 状态？**
-
-A: 检查 Claude Code CLI 是否正常运行，查看日志文件 `logs/ai4ue.log`
-
-**Q: Agent 无法访问某些文件？**
-
-A: 检查 FilePolicy 配置，确保 Agent 有相应的文件权限
-
-**Q: 工作流执行失败？**
-
-A: 查看 `.claude/runs/{run_id}/phases/` 目录下的输出文件，检查错误信息
-
-**Q: 如何调试多轮对话协议？**
-
-A: 在 AI 响应中查找 `---TASK_STATUS---` 块，检查状态和原因
-
-### 日志查看
-
-```bash
-# 查看实时日志
-tail -f logs/ai4ue.log
-
-# 查看 JSON 格式日志
-cat logs/ai4ue.json.log | jq
-
-# 查看错误日志
-cat logs/ai4ue.error.log
-```
-
----
-
-## 📊 性能优化
-
-### 1. 使用索引目录
-
-在配置中添加常用目录，加速 AI 代码理解：
-
-```yaml
-index_directories:
-  - "F:/UE5/LyraStarterGame"
-  - "F:/UE5/UE_5.4/Engine/Source"
-```
-
-### 2. 调整迭代次数
-
-根据任务复杂度调整 `max_iterations`：
-
-- 简单任务: 2-3 次
-- 中等复杂: 5 次
-- 复杂重构: 10 次
-
-### 3. 使用 dry_run 模式
-
-测试工作流配置而不实际执行：
-
-```python
-result = orchestrator.execute_workflow(
-    workflow_name="standard",
-    requirement="测试需求",
-    project_path="/path/to/project",
-    dry_run=True  # 不实际执行
-)
-```
-
-### 4. 继续上次运行
-
-使用 `use_latest=True` 继续上次未完成的运行：
-
-```python
-result = orchestrator.execute_workflow(
-    workflow_name="standard",
-    requirement="继续上次任务",
-    project_path="/path/to/project",
-    use_latest=True  # 使用最新的 run_id
-)
-```
-
 ---
 
 ## 🤝 贡献指南
@@ -781,34 +462,11 @@ result = orchestrator.execute_workflow(
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启 Pull Request
 
-### 贡献方向
-
-- 🤖 添加新的 Agent（如测试专家、性能优化专家）
-- 🔄 创建新的工作流模板
-- 🎓 贡献新的 Skill（如 UE5 最佳实践）
-- 📖 改进文档和示例
-- 🐛 修复 Bug 和改进性能
-
 ---
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
-
----
-
-## 🙏 致谢
-
-- **Anthropic** - Claude AI 和 Claude Code CLI
-- **Epic Games** - UE5 引擎
-- **Python 社区** - 优秀的开源库
-
----
-
-## 📞 联系方式
-
-- 问题反馈: [GitHub Issues](https://github.com/yourname/AI4UE_Plugin/issues)
-- 邮箱: your.email@example.com
+本项目采用 MIT 许可证
 
 ---
 
@@ -826,4 +484,4 @@ result = orchestrator.execute_workflow(
 
 ---
 
-**让 AI 成为你的 UE5 开发伙伴！** 🚀
+**让 AI 成为你的开发伙伴！** 🚀

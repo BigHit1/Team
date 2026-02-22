@@ -130,24 +130,6 @@ void ProcessWeapon(AWeaponBase* Weapon)
 }
 ```
 
-### UE5 特定检查（HIGH）
-
-- **缺少 UPROPERTY** - 需要垃圾回收的对象指针
-- **缺少 UFUNCTION** - 需要蓝图访问的函数
-- **网络复制错误** - 未正确实现 GetLifetimeReplicatedProps
-- **RPC 验证缺失** - Server RPC 没有 Validate 函数
-- **Tick 滥用** - 可以用事件或 Timer 替代
-- **硬引用过多** - 应该使用 TSoftObjectPtr
-
-```cpp
-// BAD: 缺少 UPROPERTY，可能被垃圾回收
-AWeaponBase* CurrentWeapon;
-
-// GOOD: 使用 UPROPERTY
-UPROPERTY()
-AWeaponBase* CurrentWeapon;
-```
-
 ### MEDIUM（中优先级）
 
 **性能问题**：
@@ -226,17 +208,6 @@ if (Distance < MaxEffectiveRange)
 - **批准** ✓ - 无 CRITICAL 或 HIGH 问题
 - **警告** ⚠ - 仅有 HIGH 问题（可以谨慎合并）
 - **阻止** ✗ - 有 CRITICAL 问题，必须修复后才能合并
-
-## UE5 特定检查清单
-
-- [ ] 所有 UObject 指针都有 UPROPERTY
-- [ ] 所有蓝图函数都有 UFUNCTION
-- [ ] 网络复制正确实现
-- [ ] Server RPC 有 Validate 函数
-- [ ] 没有不必要的 Tick
-- [ ] 使用 TSoftObjectPtr 避免硬引用
-- [ ] 遵循 UE5 命名约定
-- [ ] Category 标签正确设置
 
 ## 关键原则
 

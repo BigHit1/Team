@@ -182,48 +182,11 @@ if (Distance < MaxEffectiveRange)
 }
 ```
 
-## UE5 特定清理
-
-### 未使用的 UPROPERTY
-
-```cpp
-// 检查：这个属性在蓝图或 C++ 中使用了吗？
-UPROPERTY(EditAnywhere, BlueprintReadWrite)
-int32 UnusedProperty;
-
-// 如果未使用，删除它
-```
-
-### 未使用的 UFUNCTION
-
-```cpp
-// 检查：这个函数在蓝图或 C++ 中调用了吗？
-UFUNCTION(BlueprintCallable)
-void UnusedFunction();
-
-// 如果未使用，删除它
-```
-
-### 空的事件实现
-
-```cpp
-// BAD: 空的事件实现
-void BeginPlay() override
-{
-    Super::BeginPlay();
-    // 什么都不做
-}
-
-// GOOD: 删除空的重写
-// 如果不需要重写，就不要重写
-```
-
 ## 清理策略
 
 ### 保守清理（推荐）
 - 只删除明确未使用的代码
 - 保留所有公共 API
-- 保留所有 UFUNCTION/UPROPERTY（可能被蓝图使用）
 - 保留所有接口实现
 
 ### 激进清理（谨慎使用）
@@ -322,12 +285,10 @@ void BeginPlay() override
 
 ### 需要确认（谨慎）
 1. 重构重复代码（2 处）- 需要测试
-2. 删除未使用的 UPROPERTY（3 个）- 可能被蓝图使用
 
 ### 不建议删除
 1. 公共 API 函数 - 即使当前未使用
 2. 虚函数重写 - 可能被子类使用
-3. UFUNCTION - 可能被蓝图调用
 
 ## 预期效果
 - 减少代码行数: 213 行 (约 5%)
@@ -342,15 +303,13 @@ void BeginPlay() override
 - [ ] 创建了清理分支
 - [ ] 运行了所有测试
 - [ ] 确认了未使用的代码
-- [ ] 检查了蓝图引用
 - [ ] 准备了回滚计划
 
 ## 清理后验证
 
 - [ ] 代码可以编译
 - [ ] 所有测试通过
-- [ ] 蓝图没有报错
-- [ ] 游戏可以正常运行
+- [ ] 应用可以正常运行
 - [ ] 性能没有下降
 
 ## 关键原则
