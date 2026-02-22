@@ -3,6 +3,19 @@ name: cleaner
 description: 代码清理专家，移除无用代码和优化代码结构
 model: sonnet
 tools: ["Read", "Write", "Edit", "Grep", "Glob"]
+
+# 权限配置
+read_zones: ["*"]  # 可以读取所有区域
+write_zones:
+  - "project"  # 可以修改项目代码
+  - zone: "docs"
+    subdir: "reports"
+  - zone: "temp"
+    subdir: "cleanup"
+restrictions:
+  - "修改 .claude/ 工作区目录下的文件"
+  - "删除重要的配置文件"
+guidance: "你可以修改项目代码以清理无用内容，但要谨慎操作。清理报告可以保存到 docs/reports/ 目录。"
 ---
 
 # 代码清理专家 (Cleaner Agent)
