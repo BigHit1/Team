@@ -162,6 +162,47 @@
 
 项目已成功从 UE5 专用工具改造为通用的 Team AI 协作工具。所有 UE5 特定的配置、硬编码和 Agent 定义都已移除或替换为通用版本。项目现在可以用于任何软件开发场景，支持多种编程语言和开发框架。
 
+## 架构优化（2026-02-23）
+
+### 权限系统重构
+
+在去除 UE5 依赖的同时，我们还重构了权限系统，实现了更优雅的架构设计。
+
+#### 旧架构问题
+- Agent 角色和文件策略紧密耦合
+- 添加新 Agent 需要修改核心代码
+- 职责不清晰
+
+#### 新架构设计
+
+**三层分离**：
+1. **Workspace** (`workspace.py`) - 定义工作区结构和区域划分
+2. **AccessPolicy** (`access_policy.py`) - 权限匹配和判断
+3. **Agent 配置** - Agent 声明自己需要的权限
+
+**工作区区域**：
+- `OUTPUT` - 输出区：最终产物
+- `TEMP` - 临时区：过程文件（按阶段和迭代隔离）
+- `DOCS` - 文档区：文档和报告
+- `DIAGRAMS` - 图表区：架构图、流程图
+- `PHASES` - 阶段区：各阶段的输出
+- `PROJECT` - 项目区：项目源代码
+
+**Agent 权限配置示例**：
+```yaml
+read_zones: ["*"]  # 可以读取所有区域
+write_zones:
+  - zone: "docs"
+    subdir: "plans"
+  - zone: "temp"
+    subdir: "planning"
+restrictions:
+  - "创建或修改代码文件"
+guidance: "你的主要输出应该在回复中。"
+```
+
+详细说明请参考：[PERMISSION_ARCHITECTURE.md](PERMISSION_ARCHITECTURE.md)
+
 ---
 
 **改造日期**: 2026-02-23  

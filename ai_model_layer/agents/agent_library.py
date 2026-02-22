@@ -60,6 +60,12 @@ class AgentLibrary:
         description: 规划专家
         model: opus
         tools: ["Read", "Grep", "Glob"]
+        read_zones: ["*"]
+        write_zones:
+          - zone: "docs"
+            subdir: "plans"
+        restrictions: ["创建代码文件"]
+        guidance: "提示信息"
         ---
         
         # Agent 内容
@@ -76,21 +82,26 @@ class AgentLibrary:
             if content.startswith('---'):
                 parts = content.split('---', 2)
                 if len(parts) >= 3:
-                    # 解析元数据
-                    frontmatter = parts[1].strip()
-                    for line in frontmatter.split('\n'):
-                        if ':' in line:
-                            key, value = line.split(':', 1)
-                            key = key.strip()
-                            value = value.strip()
-                            
-                            # 简单解析
-                            if value.startswith('[') and value.endswith(']'):
-                                # 列表
-                                value = [v.strip().strip('"').strip("'") 
-                                        for v in value[1:-1].split(',')]
-                            
-                            metadata[key] = value
+                    # 使用 YAML 解析器
+                    import yaml
+                    try:
+                        metadata = yaml.safe_load(parts[1].strip()) or {}
+                    except yaml.YAMLError:
+                        # 回退到简单解析
+                        frontmatter = parts[1].strip()
+                        for line in frontmatter.split('\n'):
+                            if ':' in line and not line.strip().startswith('-'):
+                                key, value = line.split(':', 1)
+                                key = key.strip()
+                                value = value.strip()
+                                
+                                # 简单解析
+                                if value.startswith('[') and value.endswith(']'):
+                                    # 列表
+                                    value = [v.strip().strip('"').strip("'") 
+                                            for v in value[1:-1].split(',') if v.strip()]
+                                
+                                metadata[key] = value
                     
                     # 提示内容
                     prompt = parts[2].strip()
@@ -100,6 +111,10 @@ class AgentLibrary:
                 "description": metadata.get("description", ""),
                 "model": metadata.get("model", "sonnet"),
                 "tools": metadata.get("tools", []),
+                "read_zones": metadata.get("read_zones", ["*"]),
+                "write_zones": metadata.get("write_zones", []),
+                "restrictions": metadata.get("restrictions", []),
+                "guidance": metadata.get("guidance", ""),
                 "prompt": prompt
             }
             

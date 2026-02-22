@@ -10,7 +10,8 @@ from datetime import datetime
 import yaml
 
 from .phase import Phase
-from .file_policy import FilePolicy
+from .workspace import Workspace
+from .access_policy import AccessPolicy
 from ..agents.agent_library import AgentLibrary
 from ..clients.claude_code_client import ClaudeCodeClient, TaskStatus
 from ..utils.logger import get_logger
@@ -36,7 +37,8 @@ class WorkflowOrchestrator:
         """
         self.client = client
         self.agent_library = agent_library or AgentLibrary()
-        self.file_policy = None  # 将在执行时初始化
+        self.workspace = None  # 将在执行时初始化
+        self.access_policy = None  # 将在执行时初始化
         
         # 跟踪每个阶段的执行次数（用于迭代隔离）
         self.phase_execution_count: Dict[str, int] = {}
@@ -146,13 +148,14 @@ class WorkflowOrchestrator:
             "original_requirement": requirement
         }
         
-        # 初始化文件策略
+        # 初始化工作区和访问策略
         if project_path and not dry_run:
-            self.file_policy = FilePolicy(project_path, self.current_run_id)
-            self.file_policy.ensure_directories()
-            logger.info(f"文件策略已初始化: {self.file_policy.workspace_root}")
+            self.workspace = Workspace(project_path, self.current_run_id)
+            self.workspace.ensure_directories()
+            self.access_policy = AccessPolicy(self.workspace)
+            logger.info(f"工作区已初始化: {self.workspace.workspace_root}")
             if self.current_run_id:
-                logger.info(f"运行目录: {self.file_policy.run_root}")
+                logger.info(f"运行目录: {self.workspace.run_root}")
         
         start_time = time.time()
         
@@ -273,15 +276,15 @@ class WorkflowOrchestrator:
         agent_data = self.agent_library.get_agent(phase.agent)
         agent_prompt = self.agent_library.get_agent_prompt(phase.agent)
         
-        if not agent_prompt:
+        if not agent_data or not agent_prompt:
             logger.error(f"Agent 不存在: {phase.agent}")
             return {
                 "success": False,
                 "error": f"Agent 不存在: {phase.agent}"
             }
         
-        # 获取文件策略指导
-        file_guidance = self.file_policy.get_guidance(phase.agent)
+        # 获取文件操作指导（基于 Agent 配置和工作区结构）
+        file_guidance = self.access_policy.get_guidance(agent_data)
         
         # 格式化需求
         phase_requirement = phase.format_requirement(context)
@@ -392,21 +395,8 @@ class WorkflowOrchestrator:
         Returns:
             输出文件的绝对路径
         """
-        # 构建输出路径：.claude/runs/{run_id}/phases/{phase_name}.md
-        if self.current_run_id:
-            base_dir = Path(project_path) / ".claude" / "runs" / self.current_run_id / "phases"
-        else:
-            # 回退到旧的路径（兼容性）
-            base_dir = Path(project_path) / ".claude" / "phases"
-        
-        # 文件名处理（支持迭代）
-        if iteration == 1:
-            output_path = base_dir / output_file
-        else:
-            # 添加迭代编号
-            file_stem = Path(output_file).stem
-            file_suffix = Path(output_file).suffix
-            output_path = base_dir / f"{file_stem}_iter{iteration}{file_suffix}"
+        # 使用工作区管理器获取输出路径
+        output_path = self.workspace.get_phase_output_path(phase_name, output_file, iteration)
         
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(content, encoding='utf-8')
