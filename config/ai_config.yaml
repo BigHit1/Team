@@ -1,0 +1,99 @@
+# AI4UE - AI Model Configuration
+
+# AI Client Configuration
+ai_client:
+  # Claude Code CLI Configuration (推荐用于复杂任务)
+  claude_code:
+    # API 配置（支持自定义服务地址）
+    api_key: "sk-DorUV4UpxHzYNKD4CIxJ1IDhGY0hT3DVcClLHPz7G0reoQC5"  # 或 CLAUDE_API_KEY
+    api_base_url: "https://synai996.space/"  # 自定义 API 地址（可选）
+    
+    # CLI 配置
+    cli_path: "claude"  # Claude Code CLI 命令路径
+    model: "claude-opus-4"
+    max_tokens: 8192
+    temperature: 0.7
+    timeout: 600
+    
+    # 迭代配置
+    max_iterations: 5  # 自动迭代最大次数
+    check_interval: 5  # 任务状态检查间隔（秒）
+    auto_approve: true  # 自动批准所有更改
+  
+  # MiniMax Configuration (via Anthropic-compatible API)
+  minimax:
+    api_key: "${MINIMAX_API_KEY}"
+    api_url: "https://api.minimaxi.com/anthropic"
+    model: "MiniMax-M2.5"  # or MiniMax-M2.1
+    max_tokens: 8192
+    temperature: 0.7
+    timeout: 300
+    context_window: 200000
+  
+  # Aider Configuration with MiniMax
+  aider:
+    # Use MiniMax via Anthropic-compatible API
+    api_key: "${MINIMAX_API_KEY}"
+    api_base: "https://api.minimaxi.com/anthropic"
+    model: "MiniMax-M2.5"
+    max_tokens: 8192
+    timeout: 600
+    auto_commits: false
+    yes_always: true
+    # Aider will use --api-base flag to point to MiniMax
+
+# Agent Configuration
+agents:
+  # Coding Agent
+  coding_agent:
+    max_retries: 3
+    context_window: 200000
+    include_project_structure: true
+    include_existing_code: true
+  
+  # Analysis Agent
+  analysis_agent:
+    max_log_lines: 5000
+    focus_on_errors: true
+    include_stack_trace: true
+  
+  # Fix Agent
+  fix_agent:
+    max_iterations: 5
+    confidence_threshold: 0.8
+    incremental_fix: true
+  
+  # Document Agent
+  document_agent:
+    include_code_diff: true
+    include_test_results: true
+    format: "markdown"
+
+# Prompt Configuration
+prompts:
+  system_prompt: |
+    You are a professional UE5 C++/Blueprint developer.
+    Your task is to generate high-quality, runnable UE5 code based on requirements.
+    
+    Requirements:
+    1. Code must follow UE5 coding standards
+    2. Use UCLASS, UPROPERTY, UFUNCTION macros
+    3. Consider thread safety and performance
+    4. Add detailed comments
+    5. Handle edge cases and errors
+  
+  coding_context: |
+    Project Info:
+    - Engine Version: UE5.4
+    - Project Type: {project_type}
+    - Target Platforms: Win64, Android, iOS
+    
+    Generate code based on the following requirements.
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/ai4ue_pipeline.log"
+  console_output: true
+  color: true

@@ -1,0 +1,42 @@
+# 安全工作流：Plan → Code → Security Review → Fix
+# 强调安全审查和修复
+
+name: security
+description: 安全优先的开发工作流
+
+phases:
+  - name: planning
+    agent: planner
+    description: 创建实现计划，强调安全考虑
+    requirement: "{original_requirement}"
+    max_iterations: 5
+    timeout: 900  # 15分钟
+    output_file: plan.md
+  
+  - name: implementation
+    agent: ue5-code-guide
+    description: 实现代码，遵循安全最佳实践
+    requirement: "基于计划实现代码。\n\n计划文档路径：{previous_output_file}\n\n请先阅读该文档，然后实现代码。"
+    depends_on: planning
+    max_iterations: 10
+    timeout: 1800  # 30分钟
+    output_file: implementation.md
+  
+  - name: security_review
+    agent: security-reviewer
+    description: 深度安全审查
+    requirement: "对刚才实现的代码进行深度安全审查"
+    depends_on: implementation
+    max_iterations: 5
+    timeout: 900  # 15分钟
+    output_file: security_review.md
+  
+  - name: fix
+    agent: ue5-code-guide
+    description: 修复安全问题
+    requirement: "根据安全审查报告，修复所有发现的安全问题。\n\n安全审查报告路径：{previous_output_file}\n\n请先阅读该报告，然后修复安全问题。"
+    depends_on: security_review
+    max_iterations: 5
+    timeout: 900  # 15分钟
+    output_file: fix.md
+

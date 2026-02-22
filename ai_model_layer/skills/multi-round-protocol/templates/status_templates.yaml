@@ -1,0 +1,383 @@
+# 状态模板集合
+
+可直接复制使用的状态块模板。
+
+---
+
+## 1. COMPLETED 模板
+
+### 基础版本
+```yaml
+---TASK_STATUS---
+status: completed
+reason: [简要说明完成了什么]
+confidence: 0.9
+---END_STATUS---
+```
+
+### 完整版本
+```yaml
+---TASK_STATUS---
+status: completed
+reason: [详细说明完成的工作]
+confidence: 0.9
+files_modified:
+  - [文件路径1]
+  - [文件路径2]
+changes_summary: |
+  - [变更1]
+  - [变更2]
+  - [变更3]
+---END_STATUS---
+```
+
+### 示例
+```yaml
+---TASK_STATUS---
+status: completed
+reason: 成功实现生命恢复系统
+confidence: 0.95
+files_modified:
+  - Source/Characters/MyCharacter.h
+  - Source/Characters/MyCharacter.cpp
+changes_summary: |
+  - 添加 HealthRegenRate 属性
+  - 实现 RegenerateHealth 方法
+  - 在 Tick 中调用恢复逻辑
+---END_STATUS---
+```
+
+---
+
+## 2. CONTINUE 模板
+
+### 基础版本
+```yaml
+---TASK_STATUS---
+status: continue
+reason: [为什么需要继续]
+progress: 0.5
+next_part: [下一步做什么]
+---END_STATUS---
+```
+
+### 完整版本
+```yaml
+---TASK_STATUS---
+status: continue
+reason: [详细说明当前进度]
+progress: 0.5
+completed_parts:
+  - [已完成项1]
+  - [已完成项2]
+next_part: [下一步的详细计划]
+estimated_rounds: [预计还需几轮]
+---END_STATUS---
+```
+
+### 示例
+```yaml
+---TASK_STATUS---
+status: continue
+reason: 完成了头文件定义，需要继续实现源文件
+progress: 0.4
+completed_parts:
+  - 创建 HealthRegenComponent.h
+  - 定义类结构和属性
+  - 添加必要的头文件引用
+next_part: 实现 HealthRegenComponent.cpp 中的所有方法
+estimated_rounds: 2
+---END_STATUS---
+```
+
+---
+
+## 3. NEED_HUMAN 模板
+
+### 决策类型
+```yaml
+---TASK_STATUS---
+status: need_human
+reason: [需要决策的原因]
+intervention_type: decision
+priority: high
+question: |
+  [具体的问题描述]
+  
+  选项：
+  1. [选项1描述]
+  2. [选项2描述]
+options:
+  - option1: [选项1]
+  - option2: [选项2]
+---END_STATUS---
+```
+
+### 许可类型
+```yaml
+---TASK_STATUS---
+status: need_human
+reason: [需要许可的原因]
+intervention_type: permission
+priority: high
+question: |
+  需要执行以下操作，是否允许？
+  - [操作1]
+  - [操作2]
+risk_level: medium
+---END_STATUS---
+```
+
+### 澄清类型
+```yaml
+---TASK_STATUS---
+status: need_human
+reason: [需要澄清的原因]
+intervention_type: clarification
+priority: medium
+question: |
+  [需要澄清的具体问题]
+unclear_points:
+  - [不明确点1]
+  - [不明确点2]
+---END_STATUS---
+```
+
+### 示例
+```yaml
+---TASK_STATUS---
+status: need_human
+reason: 发现项目中已有类似组件，需要确认实现方案
+intervention_type: decision
+priority: high
+question: |
+  发现项目中已有 HealthComponent，有两个实现方案：
+  
+  方案1: 扩展现有 HealthComponent 添加恢复功能
+    优点：代码集中，易于维护
+    缺点：需要修改现有代码
+  
+  方案2: 创建新的 HealthRegenComponent
+    优点：不影响现有代码
+    缺点：需要管理两个组件
+  
+  请问选择哪个方案？
+options:
+  - extend_existing: 扩展现有组件（推荐）
+  - create_new: 创建新组件
+---END_STATUS---
+```
+
+---
+
+## 4. ERROR 模板
+
+### 编译错误
+```yaml
+---TASK_STATUS---
+status: error
+error_type: compile
+error_message: |
+  [完整的编译错误信息]
+error_location:
+  file: [文件路径]
+  line: [行号]
+root_cause: [根本原因分析]
+suggested_fix: [修复建议]
+can_auto_fix: true
+---END_STATUS---
+```
+
+### 逻辑错误
+```yaml
+---TASK_STATUS---
+status: error
+error_type: logic
+error_message: [错误描述]
+root_cause: [根本原因]
+suggested_fix: [修复方案]
+impact: [影响范围]
+---END_STATUS---
+```
+
+### 示例
+```yaml
+---TASK_STATUS---
+status: error
+error_type: compile
+error_message: |
+  MyCharacter.cpp(45): error C2065: 'HealthRegenRate' : undeclared identifier
+error_location:
+  file: Source/Characters/MyCharacter.cpp
+  line: 45
+root_cause: 在 .cpp 文件中使用了 HealthRegenRate，但忘记在 .h 文件中声明
+suggested_fix: 在 MyCharacter.h 中添加 UPROPERTY() float HealthRegenRate;
+can_auto_fix: true
+---END_STATUS---
+```
+
+---
+
+## 5. WAITING 模板
+
+### 等待编译
+```yaml
+---TASK_STATUS---
+status: waiting
+waiting_for: compile_result
+reason: 等待编译结果以验证代码正确性
+timeout: 300
+next_action: 根据编译结果决定是否需要修复
+fallback_plan: 如果编译失败，分析错误并修复
+---END_STATUS---
+```
+
+### 等待测试
+```yaml
+---TASK_STATUS---
+status: waiting
+waiting_for: test_result
+reason: 等待单元测试结果
+timeout: 180
+next_action: 根据测试结果决定下一步
+fallback_plan: 如果测试失败，分析并修复问题
+---END_STATUS---
+```
+
+### 等待用户输入
+```yaml
+---TASK_STATUS---
+status: waiting
+waiting_for: user_input
+reason: [等待用户提供什么信息]
+timeout: 3600
+required_info:
+  - [需要的信息1]
+  - [需要的信息2]
+---END_STATUS---
+```
+
+### 示例
+```yaml
+---TASK_STATUS---
+status: waiting
+waiting_for: compile_result
+reason: 等待 UE5 编译结果以验证生命恢复系统实现正确
+timeout: 300
+next_action: 如果编译成功，进行运行时测试；如果失败，分析错误并修复
+fallback_plan: 如果超时，建议手动编译并提供错误信息
+---END_STATUS---
+```
+
+---
+
+## 6. PARTIAL 模板
+
+### 基础版本
+```yaml
+---TASK_STATUS---
+status: partial
+reason: [完成了什么，存在什么问题]
+confidence: 0.7
+completed:
+  - [已完成项1]
+  - [已完成项2]
+warnings:
+  - [警告1]
+  - [警告2]
+can_proceed: true
+---END_STATUS---
+```
+
+### 完整版本
+```yaml
+---TASK_STATUS---
+status: partial
+reason: [详细说明]
+confidence: 0.7
+completed:
+  - [已完成项1]
+  - [已完成项2]
+warnings:
+  - [警告1]
+  - [警告2]
+missing_features:
+  - [缺少的功能1]
+  - [缺少的功能2]
+can_proceed: true
+recommended_action: [建议的后续操作]
+---END_STATUS---
+```
+
+### 示例
+```yaml
+---TASK_STATUS---
+status: partial
+reason: 核心生命恢复功能已实现，但缺少错误处理和边界检查
+confidence: 0.75
+completed:
+  - 实现了基础的生命恢复逻辑
+  - 添加了可配置的恢复速率
+  - 创建了必要的属性和方法
+warnings:
+  - 缺少空指针检查
+  - 未处理恢复速率为负数的情况
+  - 未处理生命值超过最大值的情况
+missing_features:
+  - 单元测试
+  - 详细的代码注释
+can_proceed: true
+recommended_action: 建议添加错误处理和边界检查后再部署到生产环境
+---END_STATUS---
+```
+
+---
+
+## 📋 使用指南
+
+### 如何选择模板
+
+1. **任务完成且无问题** → COMPLETED 模板
+2. **任务太大需要分步** → CONTINUE 模板
+3. **需要用户决策/许可** → NEED_HUMAN 模板
+4. **遇到错误** → ERROR 模板
+5. **等待外部操作** → WAITING 模板
+6. **完成但有警告** → PARTIAL 模板
+
+### 自定义模板
+
+可以根据实际需求添加自定义字段：
+
+```yaml
+---TASK_STATUS---
+status: completed
+reason: 任务完成
+confidence: 0.9
+# 自定义字段
+custom_field1: value1
+custom_field2: value2
+---END_STATUS---
+```
+
+### 组合使用
+
+某些情况下可以组合多个状态信息：
+
+```yaml
+---TASK_STATUS---
+status: partial
+reason: 核心功能完成，但建议添加测试
+confidence: 0.8
+completed: [...]
+warnings: [...]
+# 同时说明下一步
+next_steps:
+  - 添加单元测试
+  - 添加集成测试
+---END_STATUS---
+```
+
+---
+
+**提示**: 复制相应的模板，填入实际内容即可使用！
+

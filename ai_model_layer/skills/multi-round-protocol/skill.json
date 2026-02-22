@@ -1,0 +1,115 @@
+{
+  "skill_name": "multi-round-protocol",
+  "version": "2.0.0",
+  "author": "AI4UE Team",
+  "created_at": "2024-01-01",
+  "updated_at": "2026-02-18",
+  "description": "AI 多轮对话任务执行的标准化协议",
+  "tags": [
+    "protocol",
+    "multi-round",
+    "task-management",
+    "ai-workflow",
+    "status-tracking"
+  ],
+  "category": "workflow",
+  "difficulty": "beginner",
+  "estimated_time": "15 minutes",
+  "prerequisites": [
+    "基础的 AI 对话理解"
+  ],
+  "learning_objectives": [
+    "理解多轮对话协议的作用",
+    "掌握6种状态类型的使用",
+    "学会正确评估任务信心度",
+    "能够在实际任务中应用协议"
+  ],
+  "files": {
+    "documentation": [
+      "README.md",
+      "QUICKREF.md",
+      "SKILL.md",
+      "USAGE.md"
+    ],
+    "examples": [
+      "examples/simple_task.md",
+      "examples/complex_task.md",
+      "examples/error_handling.md",
+      "examples/decision_making.md"
+    ],
+    "templates": [
+      "templates/status_templates.yaml"
+    ]
+  },
+  "status_types": [
+    {
+      "name": "completed",
+      "description": "任务完成，无问题",
+      "confidence_range": "0.8-1.0",
+      "use_case": "所有工作已完成，可验证"
+    },
+    {
+      "name": "partial",
+      "description": "部分完成，有警告",
+      "confidence_range": "0.5-0.8",
+      "use_case": "核心功能完成但有小问题"
+    },
+    {
+      "name": "continue",
+      "description": "需要继续执行",
+      "confidence_range": "N/A",
+      "use_case": "任务太大，需要分步执行"
+    },
+    {
+      "name": "need_human",
+      "description": "需要人工介入",
+      "confidence_range": "N/A",
+      "use_case": "需要用户决策、许可或澄清"
+    },
+    {
+      "name": "error",
+      "description": "遇到错误",
+      "confidence_range": "N/A",
+      "use_case": "发生错误需要处理"
+    },
+    {
+      "name": "waiting",
+      "description": "等待外部操作",
+      "confidence_range": "N/A",
+      "use_case": "等待编译、测试或用户输入"
+    }
+  ],
+  "quick_start": {
+    "step1": "阅读 QUICKREF.md 快速参考",
+    "step2": "查看 examples/ 中的示例",
+    "step3": "使用 templates/ 中的模板",
+    "step4": "在实际任务中应用协议"
+  },
+  "core_principles": [
+    "始终输出状态块",
+    "诚实评估信心度",
+    "不确定时主动询问",
+    "提供详细的上下文信息",
+    "标准化的状态格式"
+  ],
+  "use_cases": [
+    "复杂的代码生成任务",
+    "多文件修改操作",
+    "需要编译验证的任务",
+    "需要用户决策的任务",
+    "长时间运行的任务"
+  ],
+  "benefits": [
+    "标准化的任务状态",
+    "可追踪的进度信息",
+    "可自动化的流程",
+    "透明的信心度评估",
+    "高效的沟通方式"
+  ],
+  "related_skills": [
+    "error-handling",
+    "task-decomposition",
+    "progress-tracking"
+  ]
+}
+

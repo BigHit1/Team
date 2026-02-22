@@ -1,0 +1,85 @@
+{
+  "skill_name": "python-logging-best-practices",
+  "version": "1.0.0",
+  "author": "AI4UE Team",
+  "created_at": "2026-02-18",
+  "description": "企业级 Python 日志系统的完整规范和最佳实践",
+  "tags": [
+    "python",
+    "logging",
+    "best-practices",
+    "structured-logging",
+    "monitoring",
+    "debugging"
+  ],
+  "category": "development",
+  "difficulty": "intermediate",
+  "estimated_time": "30 minutes",
+  "prerequisites": [
+    "Python 3.7+",
+    "基础的 Python logging 知识"
+  ],
+  "learning_objectives": [
+    "建立统一的日志规范",
+    "实现结构化、可分析的日志",
+    "正确使用日志级别",
+    "添加上下文追踪",
+    "记录性能指标",
+    "完善异常处理"
+  ],
+  "files": {
+    "documentation": [
+      "README.md",
+      "QUICKREF.md",
+      "SKILL.md"
+    ],
+    "examples": [
+      "examples/basic_usage.py",
+      "examples/advanced_patterns.py"
+    ],
+    "templates": [
+      "templates/logger_template.py",
+      "templates/checklist.md",
+      "templates/anti_patterns.md"
+    ]
+  },
+  "quick_start": {
+    "step1": "阅读 QUICKREF.md 快速参考",
+    "step2": "运行 examples/basic_usage.py 查看基础示例",
+    "step3": "参考 templates/logger_template.py 使用模板",
+    "step4": "使用 templates/checklist.md 检查代码质量"
+  },
+  "core_principles": [
+    "结构化日志 - 使用 extra 参数",
+    "上下文追踪 - 使用上下文日志器",
+    "正确级别 - DEBUG/INFO/WARNING/ERROR/CRITICAL",
+    "性能监控 - 记录关键操作耗时",
+    "完整异常 - exc_info=True + 上下文",
+    "减少冗余 - 信息集中、简洁明了"
+  ],
+  "use_cases": [
+    "新项目建立日志系统",
+    "重构现有日志代码",
+    "代码审查日志质量",
+    "团队日志规范培训"
+  ],
+  "benefits": [
+    "易于查询和分析",
+    "包含完整的上下文信息",
+    "便于问题定位和调试",
+    "支持性能监控和优化",
+    "符合企业级标准"
+  ],
+  "related_skills": [
+    "python-error-handling",
+    "python-performance-optimization",
+    "python-testing"
+  ],
+  "references": [
+    "https://docs.python.org/3/library/logging.html",
+    "https://docs.python-guide.org/writing/logging/",
+    "https://www.structlog.org/",
+    "https://12factor.net/logs"
+  ]
+}
+
