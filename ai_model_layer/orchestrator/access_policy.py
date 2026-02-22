@@ -205,13 +205,24 @@ class AccessPolicy:
         # 工作区结构信息
         structure_info = self.workspace.get_structure_info()
         
+        # 区域说明映射
+        zone_descriptions = {
+            "project": f"项目源代码目录（{self.workspace.project_path.name}/，不包括 .claude/ 工作区）",
+            "output": f"最终产物目录（{self.workspace.run_root.relative_to(self.workspace.project_path)}/output/）",
+            "temp": f"临时文件目录（{self.workspace.run_root.relative_to(self.workspace.project_path)}/temp/）",
+            "docs": f"文档目录（{self.workspace.run_root.relative_to(self.workspace.project_path)}/docs/）",
+            "diagrams": f"图表目录（{self.workspace.run_root.relative_to(self.workspace.project_path)}/diagrams/）",
+            "phases": f"阶段输出目录（{self.workspace.run_root.relative_to(self.workspace.project_path)}/phases/）"
+        }
+        
         # 读取权限
         if "*" in read_zones or "all" in read_zones:
             read_info = "- ✅ 读取任何项目文件"
         else:
             read_info = "- ✅ 读取以下区域的文件:\n"
             for zone in read_zones:
-                read_info += f"  - {zone}\n"
+                desc = zone_descriptions.get(zone, zone)
+                read_info += f"  - {desc}\n"
         
         # 写入权限
         write_info = ""
@@ -219,14 +230,17 @@ class AccessPolicy:
             write_info = "- ✅ 写入以下区域:\n"
             for zone_config in write_zones:
                 if isinstance(zone_config, str):
-                    write_info += f"  - {zone_config}/\n"
+                    zone_name = zone_config
+                    desc = zone_descriptions.get(zone_name, zone_name)
+                    write_info += f"  - {desc}\n"
                 elif isinstance(zone_config, dict):
                     zone_name = zone_config.get("zone")
                     subdir = zone_config.get("subdir")
+                    base_desc = zone_descriptions.get(zone_name, zone_name)
                     if subdir:
-                        write_info += f"  - {zone_name}/{subdir}/\n"
+                        write_info += f"  - {base_desc} 的 {subdir}/ 子目录\n"
                     else:
-                        write_info += f"  - {zone_name}/\n"
+                        write_info += f"  - {base_desc}\n"
         else:
             write_info = "- ❌ 无写入权限（只读 Agent）"
         
