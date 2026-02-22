@@ -10,10 +10,10 @@ phases:
     description: 产品经理分析需求，输出产品方案
     requirement: |
       你的任务：分析产品需求并输出产品方案。
-      **重要：你是产品决策者，只负责分析和规划产品！**
       
       需求内容：
       {original_requirement}
+      注意请先阅读项目的ReadMe了解这个项目。
       
       请输出：
       1. 产品定位和目标用户
@@ -22,77 +22,65 @@ phases:
       4. 商业化策略（如适用）
       5. 关键指标和成功标准
     max_iterations: 5
-    timeout: 900  # 15分钟
-    output_file: product_analysis.md
+    timeout: 900
   
   - name: ui_design_review
     agent: ui-designer
     description: UI设计师审查产品方案并提供UI/UX建议
     requirement: |
       你的任务：基于产品方案，提供UI/UX设计建议。
-      **重要：你是设计顾问，只负责审查和提供建议！**
       
-      工作流程：
-      第一步（必须）：使用Read工具读取产品方案文档 {previous_output_file}
-      第二步：理解产品定位和功能需求
-      第三步：提供UI/UX设计建议，包括：
-        - 界面布局和导航结构
-        - 视觉设计建议（颜色、字体、图标）
-        - 交互设计和用户流程
-        - 可访问性建议
-        - 符合平台规范的设计要点
+      产品方案：
+      {previous_phase_output}
       
-      不要跳过第一步！必须先读取文档才能开始设计审查。
+      请提供：
+      - 界面布局和导航结构
+      - 视觉设计建议（颜色、字体、图标）
+      - 交互设计和用户流程
+      - 可访问性建议
+      - 符合平台规范的设计要点
     depends_on: product_analysis
     max_iterations: 5
-    timeout: 900  # 15分钟
-    output_file: ui_design.md
+    timeout: 900
   
   - name: planning
     agent: planner
     description: 规划专家基于产品和UI方案创建实现计划
     requirement: |
       你的任务：基于产品方案和UI设计，创建详细的实现计划。
-      **重要：你只负责规划，不负责实现代码！**
       
-      工作流程：
-      第一步（必须）：使用Read工具读取以下文档
-        - 产品方案：{phases.product_analysis.output_file}
-        - UI设计：{previous_output_file}
-      第二步：理解产品需求和UI设计要求
-      第三步：创建详细的实现计划，包括：
-        - 需求分解和优先级
-        - 实现阶段和步骤
-        - 技术风险评估
-        - 依赖关系分析
+      产品方案：
+      {phase_outputs.product_analysis}
       
-      不要跳过第一步！必须先读取文档才能开始规划。
+      UI设计：
+      {previous_phase_output}
+      
+      请创建详细的实现计划，包括：
+      - 需求分解和优先级
+      - 实现阶段和步骤
+      - 技术风险评估
+      - 依赖关系分析
     depends_on: ui_design_review
     max_iterations: 5
-    timeout: 900  # 15分钟
-    output_file: plan.md
+    timeout: 900
   
   - name: architecture
     agent: architect
     description: 架构专家基于计划设计系统架构
     requirement: |
       你的任务：基于实现计划设计系统架构。
-      **重要：你只负责设计架构，不负责实现代码！**
       
-      工作流程：
-      第一步（必须）：使用Read工具读取实现计划文档 {previous_output_file}
-      第二步：理解实现计划的内容
-      第三步：设计系统架构，包括：
-        - 高层架构图
-        - 组件职责和接口
-        - 数据模型设计
-        - 技术选型和权衡
+      实现计划：
+      {previous_phase_output}
       
-      不要跳过第一步！必须先读取文档才能开始设计。
+      请设计系统架构，包括：
+      - 高层架构图
+      - 组件职责和接口
+      - 数据模型设计
+      - 技术选型和权衡
     depends_on: planning
     max_iterations: 5
-    timeout: 900  # 15分钟
-    output_file: architecture.md
+    timeout: 900
   
   - name: implementation
     agent: coder
@@ -100,43 +88,37 @@ phases:
     requirement: |
       你的任务：基于架构设计实现代码。
       
-      工作流程：
-      第一步（必须）：使用Read工具读取以下文档
-        - 架构设计：{previous_output_file}
-        - UI设计：{phases.ui_design_review.output_file}
-      第二步：理解架构设计和UI要求
-      第三步：实现代码，确保：
-        - 遵循架构设计
-        - 符合UI设计规范
-        - 代码质量高、可维护
+      架构设计：
+      {previous_phase_output}
       
-      不要跳过第一步！必须先读取文档才能开始编码。
+      UI设计参考：
+      {phase_outputs.ui_design_review}
+      
+      请实现代码，确保：
+      - 遵循架构设计
+      - 符合UI设计规范
+      - 代码质量高、可维护
     depends_on: architecture
     max_iterations: 10
-    timeout: 1800  # 30分钟
-    output_file: implementation.md
+    timeout: 1800
   
   - name: code_review
     agent: code-reviewer
     description: 代码审查专家审查代码质量
     requirement: |
       你的任务：审查刚才实现的代码质量。
-      **重要：你是审查者，不是实现者！**
       
-      工作流程：
-      第一步（必须）：使用Read工具读取实现文档 {previous_output_file}
-      第二步：理解实现的代码内容
-      第三步：审查代码质量，重点检查：
-        - 代码质量和最佳实践
-        - 性能问题
-        - 潜在的bug
-        - 可维护性
+      实现内容：
+      {previous_phase_output}
       
-      不要跳过第一步！必须先读取文档才能开始审查。
+      请审查代码质量，重点检查：
+      - 代码质量和最佳实践
+      - 性能问题
+      - 潜在的bug
+      - 可维护性
     depends_on: implementation
     max_iterations: 3
-    timeout: 600  # 10分钟
-    output_file: code_review.md
+    timeout: 600
   
   - name: cleanup
     agent: cleaner
@@ -144,22 +126,20 @@ phases:
     requirement: |
       你的任务：清理和优化刚才实现的代码。
       
-      工作流程：
-      第一步（必须）：使用Read工具读取以下文档
-        - 实现文档：{phases.implementation.output_file}
-        - 审查报告：{previous_output_file}
-      第二步：理解代码和审查意见
-      第三步：清理代码，包括：
-        - 移除未使用的代码
-        - 优化代码结构
-        - 统一代码风格
-        - 修复审查中发现的问题
+      实现内容：
+      {phase_outputs.implementation}
       
-      不要跳过第一步！必须先读取文档才能开始清理。
+      审查报告：
+      {previous_phase_output}
+      
+      请清理代码，包括：
+      - 移除未使用的代码
+      - 优化代码结构
+      - 统一代码风格
+      - 修复审查中发现的问题
     depends_on: code_review
     max_iterations: 3
-    timeout: 600  # 10分钟
-    output_file: cleanup.md
+    timeout: 600
   
   - name: documentation
     agent: doc-updater
@@ -167,23 +147,24 @@ phases:
     requirement: |
       你的任务：为实现的功能编写完整的文档。
       
-      工作流程：
-      第一步（必须）：使用Read工具读取以下文档
-        - 产品方案：{phases.product_analysis.output_file}
-        - UI设计：{phases.ui_design_review.output_file}
-        - 架构设计：{phases.architecture.output_file}
-        - 实现文档：{phases.implementation.output_file}
-      第二步：理解整个功能的全貌
-      第三步：编写文档，包括：
-        - 功能说明和使用指南
-        - API文档
-        - 代码注释
-        - 架构文档
-        - 变更日志
+      产品方案：
+      {phase_outputs.product_analysis}
       
-      不要跳过第一步！必须先读取文档才能开始编写。
+      UI设计：
+      {phase_outputs.ui_design_review}
+      
+      架构设计：
+      {phase_outputs.architecture}
+      
+      实现内容：
+      {phase_outputs.implementation}
+      
+      请编写文档，包括：
+      - 功能说明和使用指南
+      - API文档
+      - 代码注释
+      - 架构文档
+      - 变更日志
     depends_on: cleanup
     max_iterations: 3
-    timeout: 600  # 10分钟
-    output_file: documentation.md
-
+    timeout: 600

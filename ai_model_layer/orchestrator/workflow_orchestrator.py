@@ -151,6 +151,9 @@ class WorkflowOrchestrator:
             "original_requirement": requirement
         }
         
+        # 用于存储各阶段的输出内容
+        phase_outputs = {}
+        
         # 初始化工作区和访问策略
         if project_path and not dry_run:
             self.workspace = Workspace(project_path, self.current_run_id)
@@ -185,6 +188,13 @@ class WorkflowOrchestrator:
             logger.info(f"Agent: {phase.agent}")
             logger.info(f"描述: {phase.description}")
             logger.info("="*60)
+            
+            # 更新上下文：添加 phase_outputs 字典
+            context["phase_outputs"] = phase_outputs
+            
+            # 如果有依赖，添加 previous_phase_output
+            if phase.depends_on and phase.depends_on in phase_outputs:
+                context["previous_phase_output"] = phase_outputs[phase.depends_on]
             
             if dry_run:
                 # 干运行模式：只验证配置，不实际执行
@@ -222,34 +232,15 @@ class WorkflowOrchestrator:
                 logger.error(f"错误: {results['error']}")
                 break
             
-            # 保存阶段输出到文件
-            output_file_path = None
-            if not dry_run and phase.output_file and project_path:
-                output_file_path = self._save_phase_output(
-                    project_path,
-                    phase.name,
-                    phase.output_file,
-                    phase_result.get("final_output", ""),
-                    iteration
-                )
+            # 获取阶段输出内容
+            phase_output = phase_result.get("final_output", "")
             
-            # 更新上下文（供下一阶段使用）
-            # 使用文件路径而不是直接传递内容
-            if output_file_path:
-                context["previous_output_file"] = str(output_file_path)
-                context["previous_output"] = f"请查看文件: {output_file_path}"
-            else:
-                context["previous_output"] = phase_result.get("final_output", "")
-            
-            context["phase_name"] = phase.name
+            # 保存到 phase_outputs 字典（供后续阶段引用）
+            phase_outputs[phase.name] = phase_output
             
             logger.info(f"阶段完成: {phase.name}")
             logger.info(f"轮数: {phase_result.get('iterations', 0)}, 耗时: {phase_result.get('duration', 0):.1f}秒, 状态: {phase_result.get('final_status', 'unknown')}")
-            
-            # 打印输出内容预览
-            output = phase_result.get('final_output', '')
-            logger.info(f"... (共 {len(output)} 字符)")
-            logger.info(output)
+            logger.info(f"输出内容长度: {len(phase_output)} 字符")
                     
         
         results["total_duration"] = time.time() - start_time
@@ -292,12 +283,6 @@ class WorkflowOrchestrator:
         # 格式化需求
         phase_requirement = phase.format_requirement(context)
         
-        # 计算输出文件路径（用于告知 AI）
-        if self.current_run_id:
-            output_dir = f".claude/runs/{self.current_run_id}"
-        else:
-            output_dir = ".claude/runs/default"
-        
         # 构建完整提示：任务在前，角色定义在后
         full_requirement = f"""
 # 当前任务
@@ -309,11 +294,6 @@ class WorkflowOrchestrator:
 # 文件操作权限
 
 {file_guidance}
-
-**工作目录说明**：
-- 主输出会自动保存到: {output_dir}/phases/{phase.output_file if phase.output_file else phase.name + '.md'}
-- 你可以创建额外的文档和图表到指定目录
-- 临时文件可以保存到: {output_dir}/temp/{phase.name}/
 
 ---
 
